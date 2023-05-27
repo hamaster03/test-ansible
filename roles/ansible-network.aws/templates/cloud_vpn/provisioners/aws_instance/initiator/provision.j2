@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  securitygroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: {{ cloud_vpn_name }}-initiator-securitygroup
+      VpcId: {{ cloud_vpn_initiator_vpc_id }}
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 500
+          ToPort: 500
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 4500
+          ToPort: 4500
+          CidrIp: 0.0.0.0/0
+  instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: {{ cloud_vpn_initiator_instance_size }}
+      ImageId: {{ cloud_vpn_initiator_image_id }}
+      KeyName: {{ cloud_vpn_initiator_key_name }}
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          PrivateIpAddress: {{ cloud_vpn_initiator_private_ip }}
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: securitygroup
+          SubnetId: {{ cloud_vpn_initiator_subnet_id }}
+      Tags:
+        - Key: Name
+          Value: {{ cloud_vpn_name }}-initiator-instance
