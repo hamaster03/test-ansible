@@ -26,15 +26,6 @@
           Name: ha.nguyen_vpc
       register: vpc_output
 
-    # - name: get vpc infor
-    #   amazon.aws.ec2_vpc_net_info:
-    #     region: "{{ region }}"
-    #     access_key: "{{ access_key }}"
-    #     secret_key: "{{ secret_key }}"
-    #     filters:
-    #       "tag:Name": ha.nguyen_vpc
-    #   register: vpc_output
-
     - name: create public subnet
       amazon.aws.ec2_vpc_subnet:
         region: "{{ region }}"
@@ -76,12 +67,10 @@
         secret_key: "{{ secret_key }}"
         vpn_gateway_id: "{{ vgw_output.vgw.id }}"
         customer_gateway_id: "{{ customer_gateway_output.gateway.customer_gateway.customer_gateway_id }}"
-        # customer_gateway_id: cgw-0053c2e2b2de5cc7b
         static_only: true
         routes:
           - 10.10.0.0/16
           - 10.2.0.0/22
-          # - 0.0.0.0/0 #delete
         tunnel_options:
           - PreSharedKey: asdfghjkl123
         tags:
@@ -132,7 +121,6 @@
         network:
           assign_public_ip: true
           source_dest_check: false
-          # subnet_id: "{{ subnet_output.subnet.id }}"
         key_name: "{{ key_pair_output.key.name}}"
         vpc_subnet_id: "{{ subnet_output.subnet.id }}"
         instance_type: t2.micro
