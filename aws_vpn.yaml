@@ -1,44 +1,49 @@
 - name: AWS VPN
   hosts: localhost
   vars:
-    access_key: 
-    secret_key: 
+    access_key:
+    secret_key:
     region: ap-southeast-1
   tasks:
-    - name: create_key_pair
+    - name: Create_key_pair
       amazon.aws.ec2_key:
+        state: absent
         name: ha.nguyen_key_pair
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
-        key_material: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC78d2XmbpRtAoAPqXyJg84d10ImhTDj212rXjlZeWcMWBZWpWZC0wFYlzYuTvVm1wEt3fhaCnJ0rQ/aGweC2QSzaXaMEet/y+tyNzqReS7eKXD0wbbNvGrqSFY5s4TKbhcA/mf1ymBBVAFM+IH/b32mWvsj8wwVI6Eyf7SdJunjSWw9IcGau0yeAkpNpz1G3ByWl6j4spD+CTwwQILHqhGZ01r62KXHWaZbp6C+7Zsht6smwC3PCwF7EbyurGF1nMs+g7HdFd9RQWqEwhjTmWGsnGRdV258PK9123pLl6uRgi5FR+ee0IImIbjwKIuKH5EjVJNzZJs2n/1WO2SqkUuQQld+KqRp9g2f+6Myx9P0upMHpe4G3W4OIgiGfYRYyEyVMOMYMkO/FlslYyQhI66pHqXvKme7HRrT0lcluDQIog10qQ82g7D5Nr/lKKkP35AFWKwHKYMvAfY1GZyzZwsR82B9IgLZBp7a4G/swU4MmTeinHaZl7PSYdNLqrMpQk= jackapple@jacks-MacBook-Pro.local'
+        # yamllint disable-line rule:line-length
+        key_material: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC78d2XmbpRtAoAPqXyJg84d10ImhTDj212rXjlZeWcMWBZWpWZC0wFYlzYuTvVm1wEt3fhaCnJ0rQ/aGweC2QSzaXaMEet/y+tyNzqReS7eKXD0wbbNvGrqSFY5s4TKbhcA/mf1ymBBVAFM+IH/b32mWvsj8wwVI6Eyf7SdJunjSWw9IcGau0yeAkpNpz1G3ByWl6j4spD+CTwwQILHqhGZ01r62KXHWaZbp6C+7Zsht6smwC3PCwF7EbyurGF1nMs+g7HdFd9RQWqEwhjTmWGsnGRdV258PK9123pLl6uRgi5FR+ee0IImIbjwKIuKH5EjVJNzZJs2n/1WO2SqkUuQQld+KqRp9g2f+6Myx9P0upMHpe4G3W4OIgiGfYRYyEyVMOMYMkO/FlslYyQhI66pHqXvKme7HRrT0lcluDQIog10qQ82g7D5Nr/lKKkP35AFWKwHKYMvAfY1GZyzZwsR82B9IgLZBp7a4G/swU4MmTeinHaZl7PSYdNLqrMpQk= jackapple@jacks-MacBook-Pro.local"
       register: key_pair_output
 
-    - name: create vpc
+    - name: Create vpc
       amazon.aws.ec2_vpc_net:
+        state: absent
         name: ha.nguyen_vpc
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
-        cidr_block: 10.10.0.0/16
+        cidr_block: 10.0.0.0/16
         tenancy: default
         tags:
           Name: ha.nguyen_vpc
       register: vpc_output
 
-    - name: create public subnet
+    - name: Create public subnet
       amazon.aws.ec2_vpc_subnet:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
-        cidr: 10.10.0.0/24
+        cidr: 10.0.0.0/24
         vpc_id: "{{ vpc_output.vpc.id }}"
         tags:
-          Name: public_subnet
+          Name: ha.nguyen_public_subnet
       register: subnet_output
 
-    - name: create Virtual Private Gateway
+    - name: Create Virtual Private Gateway
       community.aws.ec2_vpc_vgw:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
@@ -48,20 +53,22 @@
           Name: ha.nguyen_vgw
       register: vgw_output
 
-    - name: create Customer Gateway
+    - name: Create Customer Gateway
       community.aws.ec2_customer_gateway:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
         name: ha.nguyen_customer_gateway
-        ip_address: 1.2.3.4
+        ip_address: 203.127.99.235
         routing: static
         # tags:
         #   Name: ha.nguyen_customer_gateway
       register: customer_gateway_output
 
-    - name: create VPN connection
+    - name: Create VPN connection
       community.aws.ec2_vpc_vpn:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
@@ -69,7 +76,7 @@
         customer_gateway_id: "{{ customer_gateway_output.gateway.customer_gateway.customer_gateway_id }}"
         static_only: true
         routes:
-          - 10.10.0.0/16
+          - 10.0.0.0/16
           - 10.2.0.0/22
         tunnel_options:
           - PreSharedKey: asdfghjkl123
@@ -77,20 +84,22 @@
           Name: ha.nguyen_vpn_connection
       register: vpn_connection_output
 
-    - name: create route tables
+    - name: Create route tables
       amazon.aws.ec2_vpc_route_table:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
         vpc_id: "{{ vpc_output.vpc.id }}"
-        propagating_vgw_ids: "{{ vgw_output.vgw.id}}"
-        subnets: 
+        propagating_vgw_ids: "{{ vgw_output.vgw.id }}"
+        subnets:
           - "{{ subnet_output.subnet.id }}"
         tags:
           Name: ha.nguyen_route_table
 
-    - name: create security group
+    - name: Create security group
       amazon.aws.ec2_security_group:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
@@ -111,17 +120,17 @@
           Name: ha.nguyen_security_group
       register: security_group_output
 
-    - name: create ec2 instance
+    - name: Create ec2 instance
       amazon.aws.ec2_instance:
+        state: absent
         region: "{{ region }}"
         access_key: "{{ access_key }}"
         secret_key: "{{ secret_key }}"
         name: ha.nguyen_ec2_instance
-        state: absent
         network:
           assign_public_ip: true
           source_dest_check: false
-        key_name: "{{ key_pair_output.key.name}}"
+        key_name: "{{ key_pair_output.key.name }}"
         vpc_subnet_id: "{{ subnet_output.subnet.id }}"
         instance_type: t2.micro
         image_id: ami-0df7a207adb9748c7
@@ -130,6 +139,4 @@
           Name: ha.nguyen_ec2_instance
       register: ec2_instance_output
 
-    - name: ssh to ec2 instance
-      debug:
-        msg: Public IP address is => "{{ ec2_instance_output.instances[0].network_interfaces[0].association.public_ip }}"
+# configure on-prem router => https://vyos.io/documents/aws-partnership/VyOS%E2%80%94AWS-Site-to-Site-VPN-and-static-routing.pdf
