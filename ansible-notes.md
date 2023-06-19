@@ -12,3 +12,11 @@ python3 -m pip3 install boto boto3
 #install ansible-lint is with pip
 python3 -m pip install --user ansible-lint
 ```
+
+```yaml
+#Concept
+ansible_host=abc.com
+ansible_connection=ssh/winrm/localhost
+ansible_user=root/admin
+ansible_ssh_pass/ansible_password=P@ssw0rd
+```
