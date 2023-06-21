@@ -11,4 +11,7 @@ python3 -m pip3 install boto boto3
 
 #install ansible-lint is with pip
 python3 -m pip install --user ansible-lint
+
+#install ansible module
+sudo pip3 install pymysql
 ```
