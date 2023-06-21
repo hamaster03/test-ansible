@@ -15,3 +15,11 @@ python3 -m pip install --user ansible-lint
 #install ansible module
 sudo pip3 install pymysql
 ```
+
+```yaml
+#Concept
+ansible_host=abc.com
+ansible_connection=ssh/winrm/localhost
+ansible_user=root/admin
+ansible_ssh_pass/ansible_password=P@ssw0rd
+```
